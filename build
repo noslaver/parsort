@@ -1,0 +1,22 @@
+#!/bin/bash
+
+if [ ! -d "/vol/scratch/noamkoren" ]; then
+    mkdir -p /vol/scratch/noamkoren
+    udocker mkrepo /vol/scratch/noamkoren/repo
+fi
+
+export UDOCKER_DIR=/vol/scratch/noamkoren/repo
+
+# remove container if already exists
+udocker rm multicore-builder
+
+# build project inside a Rust container
+udocker run \
+    --name=multicore-builder \
+    -v ${PWD}:/home/app \
+    -w /home/app \
+    rust:1.50-slim \
+    /bin/bash -c "cargo build --release"
+
+# copy built binary into local directory
+cp target/release/parsort parsort
